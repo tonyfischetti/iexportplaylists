@@ -33,7 +33,9 @@ into the folder into your $HOME/quicklisp/local-projects directory
 
 Open up a lisp session, and execute:
 
-  (ql:quickload "iexportplaylists")
+```
+(ql:quickload "iexportplaylists")
+```
 
 This should automagically download and install this apps dependencies:
 - [cl-ppcre](http://weitz.de/cl-ppcre/)
@@ -49,11 +51,15 @@ above--probably by downloading them, copying or sym-linking them to
 the path that is given by running `asdf:*central-registry*` in your
 lisp interpreter. Then, do the same for this package and run:
 
-  (asdf:operate 'asdf:load-op :iexportplaylists)
+```
+(asdf:operate 'asdf:load-op :iexportplaylists)
+```
 
 On SBCL and Clozure, the following incantation should work, too:
 
-  (require :iexportplaylists)
+```
+(require :iexportplaylists)
+```
 
 
 #### the easiest (but you're-gonna-have-to-trust-me) way
@@ -65,7 +71,9 @@ stand-alone executable for your system.
 ### Running it
 After the `iexportplaylists` package is loaded, run
 
-  (iexportplaylists:main)
+```
+(iexportplaylists:main)
+```
 
 To exclude certain playlists from being exported, add them to
 the variable `iexportplaylists:*ignored-playlists*`.

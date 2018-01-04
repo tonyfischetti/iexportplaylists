@@ -26,10 +26,11 @@
 
 ; these are the names of "playlists" that aren't music, or that we
 ; don't want to export
-(defparameter *ignored-playlists* '("####!####" "Music" "Music Videos" "Rentals"
-                                    "Movies" "Home Videos" "TV Shows" "Podcasts"
+(defparameter *ignored-playlists* '("####!####" "Music" "Library"
+                                    "Music Videos" "Rentals" "Movies"
+                                    "Home Videos" "TV Shows" "Podcasts"
                                     "iTunes U" "Audiobooks" "Books" "PDFs"
-                                    "Apps" "Purchased" "Genius"))
+                                    "Apps" "Purchased" "Downloaded" "Genius"))
 
 
 ;---------------------------------------------------------;

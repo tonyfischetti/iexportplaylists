@@ -9,6 +9,11 @@ program provides the ability to programmatically
 back up all playlists (in re-importable XML) and
 export an informal human-readable representation.
 
+### Prerequisite
+Newer versions of iTunes do not, by default, export
+iTunes Library.xml, which this application depends on.
+Getting iTunes to export this is very easy, just
+[follow these instructions](https://support.apple.com/en-ie/HT201610)
 
 ### Installation
 This was somewhat of a personal project so I can learn

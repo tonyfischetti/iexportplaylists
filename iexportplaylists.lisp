@@ -238,6 +238,40 @@
     (format s "</plist>")
     (get-output-stream-string s)))
 
+(defun export-playlists-xml-string (PLAYLISTS IGNORED-PLAYLISTS TRACKS-HASH
+                                        &key (quiet? nil))
+  "----------------------------------------------------------
+  Takes a '<dict>' DOM element representing a playlist
+    - an 'array' dom element (representing all playlists)
+    - a list of names representing playlists to skip
+    - a hash-table where track IDs are keys and the track dict are
+    the values
+  And returns a string that is a full XML description of
+  of the playlists and their contents that can be
+  imported into iTunes in one fell swoop
+  ----------------------------------------------------------"
+  (let ((s (make-string-output-stream)))
+    (format s "<?xml version=\"1.0\" encoding=\"UTF-8\"?>~%")
+    (format s "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0")
+    (format s "//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">~%")
+    (format s "<plist version=\"1.0\">~%")
+
+    (for-each (count playlist (get-child-elements PLAYLISTS)
+               :progress? (not quiet?))
+      (let* ((playlist-name (get-value-at-key playlist "Name"))
+             (in? (find playlist-name IGNORED-PLAYLISTS :test #'equalp)))
+        (unless in?
+          (unless quiet? (format t "On playlist: ~A~%" playlist-name))
+
+          (let ((trax (get-playlist-track-ids playlist)))
+            (unless (null trax)
+              (format s "<dict>~%")
+              (format s (make-playlist-xml-string playlist TRACKS-HASH))
+              (format s "</dict>~%")
+              (format s "~%<!-- -----------------------------------  -->~%~%")))
+          )))
+    (format s "</plist>~%")
+    (get-output-stream-string s)))
 
 ; ------------------------------------------------- ;
 
@@ -282,6 +316,26 @@
          :type      nil
          :defaults pathname)
         pathname))))
+
+(defun interact-full-xml-export (PLAYLISTS IGNORED-PLAYLISTS TRACKS-HASH
+                               &key (a-file nil))
+  "Grabs a file name to export to and exports to it"
+  (let ((fn
+          (if a-file
+            a-file
+            (prompt-read (prompt-string-with-cwd
+                           "Enter filename to export to")))))
+    (let ((overwrite? nil))
+      (when (probe-file fn)
+        (if (y-or-n-p "File already exists. Overwrite?")
+          (setf overwrite? :supersede)
+          (return-from interact-full-xml-export nil)))
+      (with-open-file (stream fn :direction :output
+                                 :if-exists overwrite?)
+        (format stream "~A" (export-playlists-simple-string PLAYLISTS
+                                                            IGNORED-PLAYLISTS
+                                                            TRACKS-HASH)))
+      (format t "Done.~%"))))
 
 (defun interact-simple-export (PLAYLISTS IGNORED-PLAYLISTS TRACKS-HASH
                                &key (a-file nil))
@@ -341,6 +395,26 @@
                                           playlist TRACKS-HASH))))))))))
     (format t "Done.~%")))
 
+(defun interact-big-xml-export (PLAYLISTS IGNORED-PLAYLISTS TRACKS-HASH
+                               &key (a-file nil))
+  "Grabs a file name to export to and exports to it"
+  (let ((fn
+          (if a-file
+            a-file
+            (prompt-read (prompt-string-with-cwd
+                           "Enter filename to export to")))))
+    (let ((overwrite? nil))
+      (when (probe-file fn)
+        (if (y-or-n-p "File already exists. Overwrite?")
+          (setf overwrite? :supersede)
+          (return-from interact-big-xml-export nil)))
+      (with-open-file (stream fn :direction :output
+                                 :if-exists overwrite?)
+        (format stream "~A" (export-playlists-xml-string PLAYLISTS
+                                                         IGNORED-PLAYLISTS
+                                                         TRACKS-HASH)))
+      (format t "Done.~%"))))
+
 (defun get-playlists-and-tracks-hash (&key (ask t))
   (let* ((WHOLE-THING nil)
          (OUTER-DICT  nil)
@@ -378,6 +452,7 @@
         (format t "~%Please choose one...~%")
         (format t "  1) Export playlists as a human-readable text file~%")
         (format t "  2) Export playlists as importable XML docs in directory~%")
+        (format t "  3) Export playlists as ONE BIG importable XML doc in a file~%")
         (format t "  q) Quit~% ")
         (let ((response (prompt-read "> ")))
           (cond
@@ -386,12 +461,14 @@
                                        *ignored-playlists* TRACKS-HASH))
             ((string= response "2")
                (interact-xml-export PLAYLISTS *ignored-playlists* TRACKS-HASH))
+            ((string= response "3")
+               (interact-big-xml-export PLAYLISTS *ignored-playlists* TRACKS-HASH))
             ((or (equalp response "q") (equalp response "quit"))
                (progn
                  (format t "Bye~%")
                  (return-from interaction)))
             (t
-              (format t "Unrecognized input (choose '1' '2' or 'q')~%"))))))))
+              (format t "Unrecognized input (choose '1' '2' '3' or 'q')~%"))))))))
 
 
 ; (main)
